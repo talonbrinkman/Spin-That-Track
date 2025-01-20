@@ -1,0 +1,312 @@
+:root{
+    --gold: #ffa845;
+    --red: #ff5447;
+    --green: #1db954;
+    --darkGrey: #212121;
+    --lightGrey: #535353;
+}
+@font-face{
+    font-family: 'Spotify Mix';
+    src: url('fonts/SpotifyMix-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+*{
+    margin: 0;
+    text-decoration: none;
+    font-family: 'Spotify Mix', sans-serif;
+    font-size: 100%;
+    font-weight: bold;
+    outline: none;
+    transition: 0.2s;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    color: inherit;
+    user-select: none;
+    border-radius: 5px;
+}
+html, body{
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+body{
+    background-color: black;
+    color: white;
+}
+@media screen and (max-width: 900px){
+    body .game{
+        width: 100%;
+        gap: 10px;
+    }
+    body .game button{
+        width: 100%;
+    }
+}
+header{
+    display: flex;
+    justify-content: center;
+    font-size: 150%;
+    width: 100%;
+    margin: 0;
+    padding: 10px;
+    text-align: center;
+}
+header h1{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    position: relative;
+}
+header button{
+    position: absolute;
+    left: calc(100% + 10px);
+    height: 25px;
+    width: auto;
+    color: var(--green);
+    background-color: transparent;
+    border: 2px solid var(--green);
+    margin: 0 auto;
+    outline: none;
+    text-align: center;
+    cursor: pointer;
+    font-size: 50%;
+}
+header button:hover{
+    color: black;
+    background-color: var(--green);
+}
+header h1 img{
+    position: absolute;
+    right: calc(100% + 10px);
+    height: 25px;
+    width: auto;
+}
+.game{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 30px;
+    width: 30%;
+    margin: 0 auto;
+    padding: 30px;
+    flex-grow: 1;
+    overflow: hidden;
+    font-size: 80%;
+}
+.game div{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.game h1{
+    width: 100%;
+    text-align: center;
+}
+.game #currentTrack, .game #winnerGif{
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    margin: 0;
+    padding: 30px;
+    overflow: hidden;
+    flex-grow: 1;
+}
+.game #currentTrack img, .game #winnerGif img{
+    min-width: 0; 
+    min-height: 0;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 5px;
+    box-shadow: 0 0 30px var(--lightGrey);
+}
+.game #currentTrack h1, .game #winnerGif h1{
+    text-align: center;
+    flex-shrink: 0;
+    font-size: 150%;
+}
+.game #currentTrack h2, .game #winnerGif h2{
+    text-align: center;
+    flex-shrink: 0;
+    font-size: 100%;
+}
+.game #users{
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    word-wrap: break-word;
+    overflow: hidden;
+    height: auto;
+    flex-shrink: 0;
+}
+.game #users .user{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    color: black;
+    background-color: var(--lightGrey);
+    margin: 0;
+    padding: 15px 20px;
+    outline: none;
+    text-align: center;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.game #users .user:hover{
+    filter: brightness(0.75);
+}
+.game #users .user h1{
+    width: fit-content;
+}
+.game input{
+    display: block;
+    width: 100%;
+    color: var(--lightGrey);
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid var(--lightGrey);
+    border-radius: 0;
+    margin: 0 auto;
+    padding: 15px 20px;
+    outline: none;
+    text-align: center;
+}
+.game input:not(:placeholder-shown), .game input:focus{
+    color: var(--green);
+    border: none;
+    border-bottom: 2px solid var(--green);
+    border-radius: 0;
+}
+.game input::placeholder{
+    color: var(--lightGrey);
+    text-align: center;
+}
+.game select{
+    display: block;
+    width: 100%;
+    color: var(--green);
+    background-color: transparent;
+    border: 2px solid var(--green);
+    margin: 0 auto;
+    padding: 15px 20px;
+    outline: none;
+    text-align: center;
+    cursor: pointer;
+
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none; 
+}
+.game option{
+    color: var(--green);
+    background-color: black;
+    border: 2px solid var(--green);
+    padding: 15px 20px;
+    text-align: center;
+    cursor: pointer;
+}
+.game button{
+    display: block;
+    width: 100%;
+    color: var(--green);
+    background-color: transparent;
+    border: 2px solid var(--green);
+    margin: 0 auto;
+    padding: 15px 20px;
+    outline: none;
+    text-align: center;
+    cursor: pointer;
+}
+.game button:hover{
+    color: black;
+    background-color: var(--green);
+}
+#leaveButton{
+    display: block;
+    width: 100%;
+    color: var(--red);
+    background-color: transparent;
+    border: 2px solid var(--red);
+    margin: 0 auto;
+    padding: 15px 20px;
+    outline: none;
+    text-align: center;
+    cursor: pointer;
+}
+#leaveButton:hover{
+    color: black;
+    background-color: var(--red);
+}
+/*Footer*/
+footer{
+    display: flex;
+    justify-content: center;
+    font-size: 75%;
+    width: 100%;
+    margin: 0;
+    padding: 10px;
+    text-align: center;
+    color: var(--lightGrey);
+}
+footer h1{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    position: relative;
+}
+/*Scrollbar*/
+::-webkit-scrollbar{
+    width: 8px;
+    display: none;
+}
+::-webkit-scrollbar-track{
+    border-radius: 100px;
+    background: var(--lightGrey);
+}
+::-webkit-scrollbar-thumb{
+    background: var(--lightGrey);
+    border-radius: 100px;
+}
+::-webkit-scrollbar-thumb:hover{
+    background: var(--darkGrey);
+}
+.patches::-webkit-scrollbar{
+    display: none;
+}
+.patches{
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+/*Arrow Buttons*/
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+/*Spinning Wheel*/
+.loader{
+    border: 5px solid var(--darkGrey);
+    border-top: 5px solid var(--green);
+    border-radius: 50%;
+    width: 100px;
+    margin: 0 auto;
+    aspect-ratio: 1 / 1;
+    animation: spin 2s linear infinite;
+}
+@keyframes spin{
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

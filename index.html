@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin That Track</title>
+    <link rel="icon" href="images/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="main.css">
+    <script type="module" src="script.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+
+</head>
+<header>
+    <h1><img src="images/favicon.png" id="logo">Spin That Track<button type="button" id="reconnectButton">Reconnect</button></h1>
+</header>
+<body>
+    <div class="game">
+        <h1 id="gameInfo">
+            Welcome to Spin That Track
+            <br>
+            <br>
+            Songs will be picked at random from the pool consisting of each players Liked Songs, Created Playlists, and Recently Played Songs, then automatically played on your current Spotify Playback Device
+            <br>
+            <br>
+            Start by logging in to Spotify then authorizing <i>Spin That Track</i>, allowing access to your Profile, Playlists, Tracks, and Playback Devices
+            <br>
+            <br>
+            Once the data has been retreived you can enter a <i>Display Name</i> and or <i>Game Code</i> to join or create a game
+        </h1>
+        <div id="currentTrack">
+            <img id="currentTrackImage" src="">
+            <h1 id="currentTrackName"></h1>
+            <h2 id="currentTrackArtists"></h2>
+        </div>
+        <div id="winnerGif">
+            <img id="winnerImage" src="https://media.tenor.com/uKq1hhtm6xoAAAAM/ninja-hyper.gif">
+            <h1 id="winnerInfo"></h1>
+        </div>
+        <div class="loader" id="spinningWheel"></div>
+        <div id="users">
+            <div class="user">
+                <h1 id="userName">Name</h1>
+                <h1 id="userScore">Score</h1>
+            </div>
+        </div>
+        <div>
+            <input type="text" id="displayName" placeholder="Display Name" maxlength="15" autocomplete="off">
+            <input type="number" id="gameCode" placeholder="Game Code" maxlength="6" autocomplete="off">
+            <select id="playBackDevices">
+                <option value="" disabled selected>Choose Playback Device</option>
+            </select>
+            <button type="button" id="loginButton">Login to Spotify</button>
+            <button type="button" id="joinButton">Join Game</button>
+            <button type="button" id="createButton">Create Game</button>
+            <button type="button" id="startButton">Start Game</button>
+            <button type="button" id="continueButton">Continue</button>
+            <button type="button" id="submitButton">Submit</button>
+            <button type="button" id="lobbyButton">Lobby</button>
+        </div>
+    </div>
+</body>
+<footer>
+    <h1>Created by Bain v1.2</h1>
+</footer>
+</html>
