@@ -1,5 +1,5 @@
 :root{
-    --gold: #ffa845;
+    --gold: #e6d196;
     --red: #ff5447;
     --green: #1db954;
     --darkGrey: #212121;
@@ -23,7 +23,7 @@
     word-wrap: break-word;
     color: inherit;
     user-select: none;
-    border-radius: 5px;
+    border-radius: 15px;
 }
 html, body{
     height: 100%;
@@ -59,15 +59,29 @@ header h1{
     justify-content: center;
     margin: 0;
     position: relative;
+    background: linear-gradient(
+        to right,
+        var(--gold) 80%,
+        white 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-fill-color: transparent;
+    background-size: 200% auto;
+    animation: textShine 2s linear infinite;
+}
+header h1:hover{
+    text-shadow: 0 0 20px var(--gold);
 }
 header button{
     position: absolute;
     left: calc(100% + 10px);
     height: 25px;
     width: auto;
-    color: var(--green);
+    color: var(--gold);
     background-color: transparent;
-    border: 2px solid var(--green);
+    border: 3px solid var(--gold);
     margin: 0 auto;
     outline: none;
     text-align: center;
@@ -76,19 +90,20 @@ header button{
 }
 header button:hover{
     color: black;
-    background-color: var(--green);
+    background-color: var(--gold);
 }
 header h1 img{
     position: absolute;
     right: calc(100% + 10px);
     height: 25px;
     width: auto;
+    animation: spin 5s linear infinite;
 }
 .game{
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 30px;
+    gap: 10px;
     width: 30%;
     margin: 0 auto;
     padding: 30px;
@@ -114,20 +129,42 @@ header h1 img{
     padding: 30px;
     overflow: hidden;
     flex-grow: 1;
+    /* border: 6px solid var(--gold); */
 }
-.game #currentTrack img, .game #winnerGif img{
+.game #currentTrack img{
     min-width: 0; 
     min-height: 0;
     max-width: 100%;
     height: auto;
     aspect-ratio: 1;
-    border-radius: 5px;
-    box-shadow: 0 0 30px var(--lightGrey);
+    /* box-shadow: 0 0 30px var(--gold); */
+    /* border: 6px solid var(--gold); */
+}
+.game #winnerGif img{
+    min-width: 0; 
+    min-height: 0;
+    max-width: 100%;
+    height: auto;
+    /* box-shadow: 0 0 30px var(--lightGrey); */
+    flex-grow: 1;
+    object-fit: cover;
 }
 .game #currentTrack h1, .game #winnerGif h1{
     text-align: center;
     flex-shrink: 0;
     font-size: 150%;
+
+    background: linear-gradient(
+        to right,
+        white 80%,
+        var(--gold) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-fill-color: transparent;
+    background-size: 200% auto;
+    animation: textShine 2s linear infinite;
 }
 .game #currentTrack h2, .game #winnerGif h2{
     text-align: center;
@@ -151,6 +188,7 @@ header h1 img{
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
     color: black;
     background-color: var(--lightGrey);
@@ -165,7 +203,11 @@ header h1 img{
     filter: brightness(0.75);
 }
 .game #users .user h1{
+    display: flex;
     width: fit-content;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
 }
 .game input{
     display: block;
@@ -181,9 +223,9 @@ header h1 img{
     text-align: center;
 }
 .game input:not(:placeholder-shown), .game input:focus{
-    color: var(--green);
+    color: var(--gold);
     border: none;
-    border-bottom: 2px solid var(--green);
+    border-bottom: 2px solid var(--gold);
     border-radius: 0;
 }
 .game input::placeholder{
@@ -193,9 +235,9 @@ header h1 img{
 .game select{
     display: block;
     width: 100%;
-    color: var(--green);
+    color: var(--gold);
     background-color: transparent;
-    border: 2px solid var(--green);
+    border: 3px solid var(--gold);
     margin: 0 auto;
     padding: 15px 20px;
     outline: none;
@@ -206,10 +248,14 @@ header h1 img{
     -moz-appearance: none;
     appearance: none; 
 }
+.game select:hover{
+    color: black;
+    background-color: var(--gold);
+}
 .game option{
-    color: var(--green);
+    color: var(--gold);
     background-color: black;
-    border: 2px solid var(--green);
+    border: 3px solid var(--gold);
     padding: 15px 20px;
     text-align: center;
     cursor: pointer;
@@ -217,9 +263,9 @@ header h1 img{
 .game button{
     display: block;
     width: 100%;
-    color: var(--green);
+    color: var(--gold);
     background-color: transparent;
-    border: 2px solid var(--green);
+    border: 3px solid var(--gold);
     margin: 0 auto;
     padding: 15px 20px;
     outline: none;
@@ -228,14 +274,14 @@ header h1 img{
 }
 .game button:hover{
     color: black;
-    background-color: var(--green);
+    background-color: var(--gold);
 }
 #leaveButton{
     display: block;
     width: 100%;
     color: var(--red);
     background-color: transparent;
-    border: 2px solid var(--red);
+    border: 3px solid var(--red);
     margin: 0 auto;
     padding: 15px 20px;
     outline: none;
@@ -299,7 +345,7 @@ input[type=number] {
 /*Spinning Wheel*/
 .loader{
     border: 5px solid var(--darkGrey);
-    border-top: 5px solid var(--green);
+    border-top: 5px solid var(--gold);
     border-radius: 50%;
     width: 100px;
     margin: 0 auto;
@@ -309,4 +355,12 @@ input[type=number] {
 @keyframes spin{
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+@keyframes textShine{
+    0%{
+      background-position: 100% 50%;
+    }
+    100%{
+      background-position: -100% 50%;
+    }
 }

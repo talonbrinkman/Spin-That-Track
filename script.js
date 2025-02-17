@@ -1,8 +1,8 @@
-const socket = io('put yours');
+const socket = io('http://spinthattrack.asuscomm.com:3000');
 
-const clientId = "put yours";
-const clientSecret = "put yours";
-const redirectUri = "put yours";
+const clientId = "d9e375382c514e60ad12f7f7897ae6ed";
+const clientSecret = "4c37d46dc0554b108978ec0470f62b36";
+const redirectUri = "http://spinthattrack.asuscomm.com/index.html";
 let accessToken;
 
 const user = {
@@ -14,6 +14,8 @@ const user = {
     userGuess: [],
 }
 let host = false;
+let voted = false;
+let created = false;
 let playersWithTrack = [];
 let gameCode = "";
 let chosenPlayBackDevice = {};
@@ -115,6 +117,7 @@ async function getData(){
     catch(error){
         if(error.response && error.response.status === 401){
             console.error('Access token is invalid or expired.');
+            redirectToSpotifyLogin(clientId, redirectUri);
         }
         else{
             console.error('Failed to verify access token:', error.message);
@@ -140,6 +143,7 @@ async function getData(){
     catch(error){
         if(error.response && error.response.status === 401){
             console.error('Access token is invalid or expired.');
+            redirectToSpotifyLogin(clientId, redirectUri);
         }
         else{
             console.error('Failed to verify access token:', error.message);
@@ -192,6 +196,7 @@ async function getData(){
     catch(error){
         if(error.response && error.response.status === 401){
             console.error('Access token is invalid or expired.');
+            redirectToSpotifyLogin(clientId, redirectUri);
         }
         else{
             console.error('Failed to verify access token:', error.message);
@@ -225,6 +230,7 @@ async function getData(){
         socket.emit('checkGame', {
             id: localStorage.getItem('gameCode'),
         });
+
     }
 
     document.getElementById("displayName").style.display = "block"
@@ -296,9 +302,6 @@ async function changeTrack(trackId){
                 console.error('Access token is invalid or expired.');
                 redirectToSpotifyLogin(clientId, redirectUri);
             }
-            else{
-                console.error('Error playing the track:', error.message);
-            }
         }
     }
     else{
@@ -321,9 +324,6 @@ async function changeTrack(trackId){
             if(error.response && error.response.status === 401){
                 console.error('Access token is invalid or expired.');
                 redirectToSpotifyLogin(clientId, redirectUri);
-            }
-            else{
-                console.error('Error playing the track:', error.message);
             }
             return null;
         }
@@ -404,7 +404,7 @@ if(window.location.search.includes('code=')){
 }
 else if(localStorage.getItem('access_token')){
     document.getElementById("loginButton").style.display = "none";
-    await getData(localStorage.getItem('access_token'));
+    await getData();
 }
 else{
     document.getElementById("loginButton").style.display = "block";
@@ -416,19 +416,10 @@ else{
 
 document.getElementById("reconnectButton").addEventListener('click', function(){
     document.getElementById("reconnectButton").style.display = "none";
-    document.getElementById("displayName").style.display = "none"
-    document.getElementById("gameCode").style.display = "none"
-    document.getElementById("joinButton").style.display = "none";
-    document.getElementById("createButton").style.display = "none";
-    
+    user.userName = document.getElementById("displayName").value || user.userName;
     socket.emit('joinGame', {
-        id: localStorage.getItem('gameCode'),
-        user: {
-            id: user.id,
-            displayName: localStorage.getItem('displayName'),
-            tracks: user.tracks,
-            availableDevices: user.availableDevices,
-        },
+        gameCode: localStorage.getItem('gameCode'),
+        user: user,
     });
 });
 document.getElementById("playBackDevices").addEventListener("change", function(){
@@ -459,27 +450,31 @@ document.getElementById("joinButton").addEventListener('click', function(){
     }
 });
 document.getElementById("createButton").addEventListener('click', function(){
-    gameCode = "";
-    for(let i = 0; i < 6; i++){
-        gameCode += Math.floor(Math.random() * 10);
-    }
-    user.userName = document.getElementById("displayName").value || user.userName;
-    socket.emit('createGame', {
-        gameCode: gameCode,
-        gameHost: user,
-        user: user,
-    });
-
-    socket.on('gameCreated', (data) => {
-        document.getElementById("displayName").style.display = "none"
-        document.getElementById("gameCode").style.display = "none"
-        document.getElementById("joinButton").style.display = "none";
-        document.getElementById("createButton").style.display = "none";
-        host = true;
-        if(host == true){
-            document.getElementById("startButton").style.display = "block";
+    if(created == false){
+        created = true;
+        gameCode = "";
+        for(let i = 0; i < 6; i++){
+            gameCode += Math.floor(Math.random() * 10);
         }
-    });
+        user.userName = document.getElementById("displayName").value || user.userName;
+        socket.emit('createGame', {
+            gameCode: gameCode,
+            gameHost: user,
+            user: user,
+        });
+
+        socket.on('gameCreated', (data) => {
+            document.getElementById("displayName").style.display = "none"
+            document.getElementById("gameCode").style.display = "none"
+            document.getElementById("joinButton").style.display = "none";
+            document.getElementById("createButton").style.display = "none";
+            host = true;
+            if(host == true){
+                document.getElementById("startButton").style.display = "block";
+            }
+            created = false;
+        });
+    }
 });
 document.getElementById("startButton").addEventListener('click', function(){
     socket.emit('startGame', {
@@ -493,6 +488,7 @@ document.getElementById("submitButton").addEventListener('click', function(){
             gameCode: gameCode,
             user: user,
         });
+        voted = true;
         document.getElementById("submitButton").style.display = "none";
     }
     else{
@@ -516,6 +512,7 @@ document.getElementById("lobbyButton").addEventListener('click', function(){
 socket.on('updateGameData', async function(data){
     console.log(data);
     if(data.gameState == "lobby"){
+        voted = false;
         document.getElementById("gameInfo").style.display = "block";
         document.getElementById("gameInfo").style.fontSize = "150%";
         document.getElementById("gameInfo").innerHTML = data.gameHost.userName + "'s Game" + '<br>' + data.gameCode;
@@ -557,7 +554,8 @@ socket.on('updateGameData', async function(data){
     }
     else if(data.gameState == "voting"){
         document.getElementById("gameInfo").style.display = "none";
-
+        document.getElementById("playBackDevices").style.display = "none";
+        
         const track = await getTrack(data.gameCurrentTrackId);
         document.getElementById("currentTrack").style.display = "flex";
         document.getElementById("currentTrackImage").src = track.images[0].url;
@@ -580,14 +578,16 @@ socket.on('updateGameData', async function(data){
             userDiv.id = 'user-' + gameUser.userId;
             user.userGuess = [];
             userDiv.onclick = function(){
-                const element = document.getElementById('user-' + gameUser.userId);
-                if(element.style.backgroundColor != 'var(--green)'){
-                    element.style.backgroundColor = 'var(--green)';
-                    user.userGuess.push(gameUser.userId);
-                }
-                else{
-                    element.style.backgroundColor = 'var(--lightGrey)';
-                    user.userGuess.splice(user.userGuess.indexOf(gameUser.userId), 1);
+                if(voted == false){
+                    const element = document.getElementById('user-' + gameUser.userId);
+                    if(element.style.backgroundColor != 'var(--gold)'){
+                        element.style.backgroundColor = 'var(--gold)';
+                        user.userGuess.push(gameUser.userId);
+                    }
+                    else{
+                        element.style.backgroundColor = 'var(--lightGrey)';
+                        user.userGuess.splice(user.userGuess.indexOf(gameUser.userId), 1);
+                    }
                 }
             }
 
@@ -607,6 +607,7 @@ socket.on('updateGameData', async function(data){
         document.getElementById("lobbyButton").style.display = "none";
     }
     else if(data.gameState == "continuing"){
+        voted = false;
         document.getElementById("gameInfo").style.display = "none";
 
         document.getElementById("users").style.display = "flex";
@@ -622,18 +623,18 @@ socket.on('updateGameData', async function(data){
             const userGuesses = document.createElement('h1');
             const userScore = document.createElement('h1');
 
-            userGuesses.style.whiteSpace = "nowrap";
+            userGuesses.style.whiteSpace = "break-spaces";
 
             if(data.playersWithTrack.includes(gameUser.userId)){
                 userName.innerText = "✓ " + gameUser.userName;
             }
             else{
-                userName.innerText = gameUser.userName;
+                userName.innerHTML = gameUser.userName;
             }
 
             if(user.userGuess.includes(gameUser.userId)){
                 if(user.userGuess.includes(gameUser.userId) && data.playersWithTrack.includes(gameUser.userId)){
-                    userDiv.style.backgroundColor = 'var(--green)';
+                    userDiv.style.backgroundColor = 'var(--gold)';
                 }
                 else{
                     userDiv.style.backgroundColor = 'var(--red)';
@@ -666,16 +667,27 @@ socket.on('updateGameData', async function(data){
         document.getElementById("lobbyButton").style.display = "none";
     }
     else if(data.gameState == "winner"){
+        voted = false;
         document.getElementById("gameInfo").style.display = "none";
-        console.log(data.gameWinner);
         document.getElementById("winnerInfo").innerHTML = data.gameWinner + " Wins";
-        const images = [
-            "https://media.tenor.com/uKq1hhtm6xoAAAAM/ninja-hyper.gif",
-            "https://media.tenor.com/y4x6gDa2MooAAAAM/mouth-open-meme.gif",
-            "https://media.tenor.com/Q8KG0-6aTU0AAAAM/house-md-dr-house.gif",
-            "https://media0.giphy.com/media/SG5paY6WxH6Ki2lWys/giphy.gif?cid=6c09b952t9bmm8vjyu3wp2eb4addc2r0ooghjale8x52il68&ep=v1_gifs_search&rid=giphy.gif&ct=g",
-        ];
-        const randomImage = images[Math.floor(Math.random() * images.length)];
+        const myImages = [
+            "images/winner images/1.jpg",
+            "images/winner images/2.jpg",
+            "images/winner images/3.jpg",
+            "images/winner images/4.jpg",
+            "images/winner images/5.jpg",
+            "images/winner images/6.jpg",
+            "images/winner images/7.jpg",
+            "images/winner images/8.jpg",
+            "images/winner images/9.jpg",
+            "images/winner images/10.jpg",
+            "images/winner images/11.jpg",
+            "images/winner images/12.jpg",
+            "images/winner images/13.jpg",
+            "images/winner images/14.jpg",
+            "images/winner images/15.jpg",
+        ]
+        const randomImage = myImages[Math.floor(Math.random() * myImages.length)];
         document.getElementById("winnerImage").src = randomImage;
         document.getElementById("winnerGif").style.display = "flex";
 
@@ -694,18 +706,18 @@ socket.on('updateGameData', async function(data){
             const userGuesses = document.createElement('h1');
             const userScore = document.createElement('h1');
 
-            userGuesses.style.whiteSpace = "nowrap";
+            userGuesses.style.whiteSpace = "break-spaces";
 
             if(data.playersWithTrack.includes(gameUser.userId)){
                 userName.innerText = "✓ " + gameUser.userName;
             }
             else{
-                userName.innerText = gameUser.userName;
+                userName.innerHTML = gameUser.userName;
             }
 
             if(user.userGuess.includes(gameUser.userId)){
                 if(user.userGuess.includes(gameUser.userId) && data.playersWithTrack.includes(gameUser.userId)){
-                    userDiv.style.backgroundColor = 'var(--green)';
+                    userDiv.style.backgroundColor = 'var(--gold)';
                 }
                 else{
                     userDiv.style.backgroundColor = 'var(--red)';

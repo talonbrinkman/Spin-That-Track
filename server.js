@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "put yours",
+        origin: "http://spinthattrack.asuscomm.com",
         methods: ["GET", "POST"],
         allowedHeaders: ["Content-Type"],
     }
@@ -15,7 +15,8 @@ const io = socketIo(server, {
 app.use(cors());
 app.use(express.static('public'));
 
-const games = []
+const users = [];
+const games = [];
 
 function updateGameData(game){
     for(let j = 0; j < game.gameUsers.length; j++){
@@ -23,7 +24,17 @@ function updateGameData(game){
             gameWinner: game.gameWinner,
             gameCode: game.gameCode,
             gameHost: game.gameHost,
-            gameUsers: game.gameUsers,
+            gameHost: {
+                userId: game.gameHost.userId,
+                userName: game.gameHost.userName,
+            },
+            gameUsers: game.gameUsers.map(user => ({
+                userId: user.userId,
+                userName: user.userName,
+                userSocketId: user.userSocketId,
+                userScore: user.userScore,
+                userGuess: user.userGuess,
+            })),
             gameCurrentTrackId: game.gameCurrentTrackId,
             gameState: game.gameState,
             playersWithTrack: game.playersWithTrack,
@@ -36,11 +47,19 @@ function deleteGame(game){
     }
 }
 function nextTrack(game){
-    const randomUserIndex = Math.floor(Math.random() * game.gameUsers.length);
-    const randomUser = game.gameUsers[randomUserIndex];
-    const randomTrackIndex = Math.floor(Math.random() * randomUser.userTracks.length);
-    const randomTrack = randomUser.userTracks[randomTrackIndex];
+    let randomUserIndex = Math.floor(Math.random() * game.gameUsers.length);
+    let randomUser = game.gameUsers[randomUserIndex];
+    let randomTrackIndex = Math.floor(Math.random() * randomUser.userTracks.length);
+    let randomTrack = randomUser.userTracks[randomTrackIndex];
+
+    while(game.playedTracks.includes(randomTrack.id)){
+        randomUserIndex = Math.floor(Math.random() * game.gameUsers.length);
+        randomUser = game.gameUsers[randomUserIndex];
+        randomTrackIndex = Math.floor(Math.random() * randomUser.userTracks.length);
+        randomTrack = randomUser.userTracks[randomTrackIndex];
+    }
     game.gameCurrentTrackId = randomTrack.id;
+    game.playedTracks.push(randomTrack.id);
 }
 function checkEndGame(game){
     let highestScore = 0;
@@ -96,12 +115,15 @@ function resetGame(game){
     game.gameCurrentTrackId = "";
     for(let j = 0; j < game.gameUsers.length; j++){
         game.gameUsers[j].userScore = 0;
+        game.gameUsers[j].userGuess = [];
     }
+    game.playedTracks = [];
 }
 
 io.on('connection', (socket) => {
-    console.log("[USER CONNECTED: " + socket.id + "]");
-
+    console.clear();
+    users.push(socket.id);
+    console.log("Users: " + users.length + "\nGames: " + games.length);
     socket.on('joinGame', (data) => {
         let gameFound = false;
         for(let i = 0; i < games.length; i++){
@@ -129,10 +151,13 @@ io.on('connection', (socket) => {
             gameState: "lobby",
             gameContinueVotes: 0,
             playersWithTrack: [],
+            playedTracks: [],
             gameWinner: "",
         });
         socket.emit('gameCreated');
         updateGameData(games[games.length - 1]);
+        console.clear();
+        console.log("Users: " + users.length + "\nGames: " + games.length);
     });
     socket.on('startGame', (data) => {
         for(let i = 0; i < games.length; i++){
@@ -185,7 +210,6 @@ io.on('connection', (socket) => {
                 }
                 if(gameSubmitCount >= games[i].gameUsers.length){
                     games[i].gameState = "continuing";
-                    const playersWithTrack = 
                     getPlayersWithCurrentTrack(games[i]);
                     processGuesses(games[i]);
                     checkEndGame(games[i]);
@@ -219,11 +243,9 @@ io.on('connection', (socket) => {
         }
     });
     socket.on('disconnect', () => {
-        console.log("[USER DISCONNECTED: " + socket.id + "]");
         for(let i = 0; i < games.length; i++){
             if(games[i].gameHost.userSocketId == socket.id){
                 deleteGame(games[i]);
-                console.log(`Game with ID ${games[i].gameCode} hosted by ${socket.id} has been deleted.`);
                 games.splice(i, 1);
                 break;
             }
@@ -235,6 +257,9 @@ io.on('connection', (socket) => {
                 }
             }
         }
+        console.clear();
+        users.splice(users.indexOf(socket.id), 1);
+        console.log("Users: " + users.length + "\nGames: " + games.length);
     });
 });
 
