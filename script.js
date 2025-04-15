@@ -161,10 +161,12 @@ async function getData(){
                     },
                 });
                 response.data.items.forEach(item => {
-                    user.userTracks.push({
-                        name: item.track.name,
-                        id: item.track.id,
-                    });
+                    if (item.track) {
+                        user.userTracks.push({
+                            name: item.track.name,
+                            id: item.track.id,
+                        });
+                    }
                 });
                 nextUrl = response.data.next;
             }
@@ -175,6 +177,7 @@ async function getData(){
             }
             else{
                 console.error('Failed to fetch tracks for playlist:', user.userPlaylists[i].name, error.message);
+                console.log('Failed to fetch tracks for playlist:', user.userPlaylists[i].name, error.message);
             }
         }
     }
