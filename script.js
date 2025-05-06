@@ -233,7 +233,6 @@ async function getData(){
         socket.emit('checkGame', {
             id: localStorage.getItem('gameCode'),
         });
-
     }
 
     document.getElementById("displayName").style.display = "block"

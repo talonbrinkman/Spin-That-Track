@@ -34,8 +34,10 @@ function updateGameData(game){
                 userSocketId: user.userSocketId,
                 userScore: user.userScore,
                 userGuess: user.userGuess,
+                userTracks: user.userTracks
             })),
             gameCurrentTrackId: game.gameCurrentTrackId,
+            gameCurrentTrackName: game.gameCurrentTrackName,
             gameState: game.gameState,
             playersWithTrack: game.playersWithTrack,
         });
@@ -59,6 +61,7 @@ function nextTrack(game){
         randomTrack = randomUser.userTracks[randomTrackIndex];
     }
     game.gameCurrentTrackId = randomTrack.id;
+    game.gameCurrentTrackName = randomTrack.name;
     game.playedTracks.push(randomTrack.id);
 }
 function checkEndGame(game){
@@ -103,9 +106,39 @@ function processGuesses(game){
     game.currentTrackId = "continue";
 }
 function getPlayersWithCurrentTrack(game){
+    // Get the base track name by removing common version indicators
+    const baseTrackName = game.gameCurrentTrackName
+        .toLowerCase()
+        .replace(/\s*\(.*?\)/g, '') // Remove anything in parentheses
+        .replace(/\s*\[.*?\]/g, '') // Remove anything in brackets
+        .replace(/\s*[-–—].*$/g, '') // Remove anything after a dash
+        .replace(/\s*feat\..*$/i, '') // Remove "feat." and anything after
+        .replace(/\s*ft\..*$/i, '') // Remove "ft." and anything after
+        .replace(/\s*with.*$/i, '') // Remove "with" and anything after
+        .replace(/\s*remix.*$/i, '') // Remove "remix" and anything after
+        .replace(/\s*live.*$/i, '') // Remove "live" and anything after
+        .replace(/\s*version.*$/i, '') // Remove "version" and anything after
+        .replace(/\s*edit.*$/i, '') // Remove "edit" and anything after
+        .trim();
+
     game.playersWithTrack = game.gameUsers
         .filter(user => 
-            user.userTracks.some(track => track.id == game.gameCurrentTrackId)
+            user.userTracks.some(track => {
+                const userTrackBaseName = track.name
+                    .toLowerCase()
+                    .replace(/\s*\(.*?\)/g, '')
+                    .replace(/\s*\[.*?\]/g, '')
+                    .replace(/\s*[-–—].*$/g, '')
+                    .replace(/\s*feat\..*$/i, '')
+                    .replace(/\s*ft\..*$/i, '')
+                    .replace(/\s*with.*$/i, '')
+                    .replace(/\s*remix.*$/i, '')
+                    .replace(/\s*live.*$/i, '')
+                    .replace(/\s*version.*$/i, '')
+                    .replace(/\s*edit.*$/i, '')
+                    .trim();
+                return userTrackBaseName === baseTrackName;
+            })
         )
         .map(user => user.userId);
 }
@@ -148,6 +181,7 @@ io.on('connection', (socket) => {
             gameHost: data.user,
             gameUsers: [data.user],
             gameCurrentTrackId: "",
+            gameCurrentTrackName: "",
             gameState: "lobby",
             gameContinueVotes: 0,
             playersWithTrack: [],
