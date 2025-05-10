@@ -38,6 +38,7 @@ function updateGameData(game){
             })),
             gameCurrentTrackId: game.gameCurrentTrackId,
             gameCurrentTrackName: game.gameCurrentTrackName,
+            gameCurrentTrackArtist: game.gameCurrentTrackArtist,
             gameState: game.gameState,
             playersWithTrack: game.playersWithTrack,
         });
@@ -62,6 +63,7 @@ function nextTrack(game){
     }
     game.gameCurrentTrackId = randomTrack.id;
     game.gameCurrentTrackName = randomTrack.name;
+    game.gameCurrentTrackArtist = randomTrack.artist;
     game.playedTracks.push(randomTrack.id);
 }
 function checkEndGame(game){
@@ -87,26 +89,7 @@ function checkEndGame(game){
     }
 }
 function processGuesses(game){
-    for(let i = 0; i < game.gameUsers.length; i++){
-        const player = game.gameUsers[i];
-        for(let j = 0; j < player.userGuess.length; j++){
-            const guessedUserId = player.userGuess[j];
-            const guessedUser = game.gameUsers.find(user => user.userId == guessedUserId);
-            if(guessedUser){
-                const trackFound = guessedUser.userTracks.some(track => track.id == game.gameCurrentTrackId);
-                if (trackFound) {
-                    player.userScore += 3;
-                }
-                else{
-                    player.userScore -= 1;
-                }
-            }
-        }
-    }
-    game.currentTrackId = "continue";
-}
-function getPlayersWithCurrentTrack(game){
-    // Get the base track name by removing common version indicators
+    // Get the base track name and artist by removing common version indicators
     const baseTrackName = game.gameCurrentTrackName
         .toLowerCase()
         .replace(/\s*\(.*?\)/g, '') // Remove anything in parentheses
@@ -120,6 +103,86 @@ function getPlayersWithCurrentTrack(game){
         .replace(/\s*version.*$/i, '') // Remove "version" and anything after
         .replace(/\s*edit.*$/i, '') // Remove "edit" and anything after
         .trim();
+
+    const baseArtist = game.gameCurrentTrackArtist ? game.gameCurrentTrackArtist
+        .toLowerCase()
+        .replace(/\s*\(.*?\)/g, '')
+        .replace(/\s*\[.*?\]/g, '')
+        .replace(/\s*[-–—].*$/g, '')
+        .replace(/\s*feat\..*$/i, '')
+        .replace(/\s*ft\..*$/i, '')
+        .replace(/\s*with.*$/i, '')
+        .trim() : '';
+
+    for(let i = 0; i < game.gameUsers.length; i++){
+        const player = game.gameUsers[i];
+        for(let j = 0; j < player.userGuess.length; j++){
+            const guessedUserId = player.userGuess[j];
+            const guessedUser = game.gameUsers.find(user => user.userId == guessedUserId);
+            if(guessedUser){
+                const trackFound = guessedUser.userTracks.some(track => {
+                    const userTrackBaseName = track.name
+                        .toLowerCase()
+                        .replace(/\s*\(.*?\)/g, '')
+                        .replace(/\s*\[.*?\]/g, '')
+                        .replace(/\s*[-–—].*$/g, '')
+                        .replace(/\s*feat\..*$/i, '')
+                        .replace(/\s*ft\..*$/i, '')
+                        .replace(/\s*with.*$/i, '')
+                        .replace(/\s*remix.*$/i, '')
+                        .replace(/\s*live.*$/i, '')
+                        .replace(/\s*version.*$/i, '')
+                        .replace(/\s*edit.*$/i, '')
+                        .trim();
+
+                    const userTrackBaseArtist = track.artist ? track.artist
+                        .toLowerCase()
+                        .replace(/\s*\(.*?\)/g, '')
+                        .replace(/\s*\[.*?\]/g, '')
+                        .replace(/\s*[-–—].*$/g, '')
+                        .replace(/\s*feat\..*$/i, '')
+                        .replace(/\s*ft\..*$/i, '')
+                        .replace(/\s*with.*$/i, '')
+                        .trim() : '';
+
+                    return userTrackBaseName === baseTrackName && userTrackBaseArtist === baseArtist;
+                });
+                if (trackFound) {
+                    player.userScore += 3;
+                }
+                else{
+                    player.userScore -= 1;
+                }
+            }
+        }
+    }
+    game.currentTrackId = "continue";
+}
+function getPlayersWithCurrentTrack(game){
+    // Get the base track name and artist by removing common version indicators
+    const baseTrackName = game.gameCurrentTrackName
+        .toLowerCase()
+        .replace(/\s*\(.*?\)/g, '') // Remove anything in parentheses
+        .replace(/\s*\[.*?\]/g, '') // Remove anything in brackets
+        .replace(/\s*[-–—].*$/g, '') // Remove anything after a dash
+        .replace(/\s*feat\..*$/i, '') // Remove "feat." and anything after
+        .replace(/\s*ft\..*$/i, '') // Remove "ft." and anything after
+        .replace(/\s*with.*$/i, '') // Remove "with" and anything after
+        .replace(/\s*remix.*$/i, '') // Remove "remix" and anything after
+        .replace(/\s*live.*$/i, '') // Remove "live" and anything after
+        .replace(/\s*version.*$/i, '') // Remove "version" and anything after
+        .replace(/\s*edit.*$/i, '') // Remove "edit" and anything after
+        .trim();
+
+    const baseArtist = game.gameCurrentTrackArtist ? game.gameCurrentTrackArtist
+        .toLowerCase()
+        .replace(/\s*\(.*?\)/g, '')
+        .replace(/\s*\[.*?\]/g, '')
+        .replace(/\s*[-–—].*$/g, '')
+        .replace(/\s*feat\..*$/i, '')
+        .replace(/\s*ft\..*$/i, '')
+        .replace(/\s*with.*$/i, '')
+        .trim() : '';
 
     game.playersWithTrack = game.gameUsers
         .filter(user => 
@@ -137,7 +200,18 @@ function getPlayersWithCurrentTrack(game){
                     .replace(/\s*version.*$/i, '')
                     .replace(/\s*edit.*$/i, '')
                     .trim();
-                return userTrackBaseName === baseTrackName;
+
+                const userTrackBaseArtist = track.artist ? track.artist
+                    .toLowerCase()
+                    .replace(/\s*\(.*?\)/g, '')
+                    .replace(/\s*\[.*?\]/g, '')
+                    .replace(/\s*[-–—].*$/g, '')
+                    .replace(/\s*feat\..*$/i, '')
+                    .replace(/\s*ft\..*$/i, '')
+                    .replace(/\s*with.*$/i, '')
+                    .trim() : '';
+
+                return userTrackBaseName === baseTrackName && userTrackBaseArtist === baseArtist;
             })
         )
         .map(user => user.userId);
@@ -182,6 +256,7 @@ io.on('connection', (socket) => {
             gameUsers: [data.user],
             gameCurrentTrackId: "",
             gameCurrentTrackName: "",
+            gameCurrentTrackArtist: "",
             gameState: "lobby",
             gameContinueVotes: 0,
             playersWithTrack: [],
