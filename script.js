@@ -111,6 +111,7 @@ async function getData(){
             user.userTracks.push({
                 "name": item.track.name,
                 "id": item.track.id,
+                "artist": item.track.artists[0].name
             });
         });
     }
@@ -165,6 +166,7 @@ async function getData(){
                         user.userTracks.push({
                             name: item.track.name,
                             id: item.track.id,
+                            artist: item.track.artists[0].name
                         });
                     }
                 });
@@ -193,6 +195,7 @@ async function getData(){
             user.userTracks.push({
                 "name": item.track.name,
                 "id": item.track.id,
+                "artist": item.track.artists[0].name
             });
         });
     }
