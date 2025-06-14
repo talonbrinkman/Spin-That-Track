@@ -111,7 +111,6 @@ async function getData(){
             user.userTracks.push({
                 "name": item.track.name,
                 "id": item.track.id,
-                "artist": item.track.artists[0].name
             });
         });
     }
@@ -166,7 +165,6 @@ async function getData(){
                         user.userTracks.push({
                             name: item.track.name,
                             id: item.track.id,
-                            artist: item.track.artists[0].name
                         });
                     }
                 });
@@ -195,7 +193,6 @@ async function getData(){
             user.userTracks.push({
                 "name": item.track.name,
                 "id": item.track.id,
-                "artist": item.track.artists[0].name
             });
         });
     }
@@ -236,6 +233,7 @@ async function getData(){
         socket.emit('checkGame', {
             id: localStorage.getItem('gameCode'),
         });
+
     }
 
     document.getElementById("displayName").style.display = "block"
@@ -689,6 +687,8 @@ socket.on('updateGameData', async function(data){
             "images/winner images/11.jpg",
             "images/winner images/12.jpg",
             "images/winner images/13.jpg",
+            "images/winner images/14.jpg",
+            "images/winner images/15.jpg",
         ]
         const randomImage = myImages[Math.floor(Math.random() * myImages.length)];
         document.getElementById("winnerImage").src = randomImage;
