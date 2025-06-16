@@ -20,6 +20,8 @@ let playersWithTrack = [];
 let gameCode = "";
 let chosenPlayBackDevice = {};
 
+var startTime = 30;
+
 async function redirectToSpotifyLogin(clientId, redirectUri){
     const scopes = [
         'user-read-private',
@@ -390,7 +392,6 @@ async function pauseTrack(){
     }
 }
 
-document.getElementById("reconnectButton").style.display = "none";
 document.getElementById("gameInfo").style.display = "block";
 document.getElementById("winnerGif").style.display = "none";
 document.getElementById("currentTrack").style.display = "none";
@@ -422,20 +423,39 @@ else{
     });
 }
 
-document.getElementById("reconnectButton").addEventListener('click', function(){
-    document.getElementById("reconnectButton").style.display = "none";
-    user.userName = document.getElementById("displayName").value || user.userName;
-    socket.emit('joinGame', {
-        gameCode: localStorage.getItem('gameCode'),
-        user: user,
-    });
-});
 document.getElementById("playBackDevices").addEventListener("change", function(){
     const playBackDeviceId = this.value;
     const playBackDeviceName = this.options[this.selectedIndex].text;
 
     chosenPlayBackDevice.id = playBackDeviceId;
     chosenPlayBackDevice.name = playBackDeviceName;
+});
+document.getElementById("startTimeSelection").addEventListener('click', function(){
+    const startTimeSelection = document.getElementById('startTimeSelection');
+    if(startTime == 30){
+        startTime = 60;
+        startTimeSelection.innerHTML = `
+            <h1>0s</h1>
+            <h1>30s</h1>
+            <h2>60s</h2>
+        `;
+    }
+    else if(startTime == 60){
+        startTime = 0;
+        startTimeSelection.innerHTML = `
+            <h2>0s</h2>
+            <h1>30s</h1>
+            <h1>60s</h1>
+        `;
+    }
+    else if(startTime == 0){
+        startTime = 30;
+        startTimeSelection.innerHTML = `
+            <h1>0s</h1>
+            <h2>30s</h2>
+            <h1>60s</h1>
+        `;
+    }
 });
 document.getElementById("joinButton").addEventListener('click', function(){
     if(document.getElementById("gameCode").value != ""){
@@ -794,10 +814,8 @@ socket.on('invalidGameCode', function(){
 });
 socket.on('gameCodeVerification', (data) => {
     if(data.message === "true"){
-        document.getElementById("reconnectButton").style.display = "block";
     }
     else{
-        document.getElementById("reconnectButton").style.display = "none";
         localStorage.removeItem('displayName');
         localStorage.removeItem('gameCode');
     }

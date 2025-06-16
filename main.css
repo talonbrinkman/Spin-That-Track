@@ -120,6 +120,22 @@ header h1 img{
     width: 100%;
     text-align: center;
 }
+#releaseNotes{
+    display: flex;
+    width: 100%;
+    max-height: 125px;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 10px;
+    padding: 10px 0;
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        black calc(0% + 20px),
+        black calc(100% - 20px),
+        transparent 100%
+    );
+}
 .game #currentTrack, .game #winnerGif{
     display: flex;
     flex-direction: column;
@@ -293,6 +309,20 @@ header h1 img{
     flex-direction: row;
     justify-content: space-between;
 }
+.game #startTimeSelection:hover{
+    color: var(--gold);
+    background-color: var(--gold);
+}
+.game #startTimeSelection:hover h1{
+    color: black;
+    background-color: transparent;
+    border-color: var(--gold);
+}
+.game #startTimeSelection:hover h2{
+    color: var(--gold);
+    background-color: black;
+    border-color: black;
+}
 .game #startTimeSelection h1{
     display: flex;
     width: 100%;
@@ -379,8 +409,8 @@ input[type=number] {
 }
 /*Spinning Wheel*/
 .loader{
-    border: 5px solid var(--darkGrey);
-    border-top: 5px solid var(--gold);
+    border: 8px solid var(--darkGrey);
+    border-top: 8px solid var(--gold);
     border-radius: 50%;
     width: 100px;
     margin: 0 auto;
