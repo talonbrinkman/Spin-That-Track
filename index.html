@@ -30,6 +30,17 @@
             <br>
             <br>
             Once the data has been retreived you can enter a <i>Display Name</i> and or <i>Game Code</i> to join or create a game
+            <br>
+            <br>
+            [v1.5.0]
+            <br>
+            • Player Readiness Indicators
+            <br>
+            • Song Start Time Selection (0s, 30s, 60s)
+            <br>
+            • Enhanced song matching to support all versions (remixes, live versions, edits)
+            <br>
+            • Added comprehensive update logs
         </h1>
         <div id="currentTrack">
             <img id="currentTrackImage" src="">
@@ -55,6 +66,11 @@
                 <option value="" disabled selected>Choose Playback Device</option>
             </select>
             <button type="button" id="loginButton">Login to Spotify</button>
+            <div id="startTimeSelection" onclick="changeStartTime()">
+                <h1>0s</h1>
+                <h2>30s</h2>
+                <h1>60s</h1>
+            </div>
             <button type="button" id="joinButton">Join Game</button>
             <button type="button" id="createButton">Create Game</button>
             <button type="button" id="startButton">Start Game</button>
@@ -63,8 +79,38 @@
             <button type="button" id="lobbyButton">Lobby</button>
         </div>
     </div>
+    <script>
+        var startTime = 30;
+        function changeStartTime(){
+            const startTimeSelection = document.getElementById('startTimeSelection');
+            if(startTime == 30){
+                startTime = 60;
+                startTimeSelection.innerHTML = `
+                    <h1>0s</h1>
+                    <h1>30s</h1>
+                    <h2>60s</h2>
+                `;
+            }
+            else if(startTime == 60){
+                startTime = 0;
+                startTimeSelection.innerHTML = `
+                    <h2>0s</h2>
+                    <h1>30s</h1>
+                    <h1>60s</h1>
+                `;
+            }
+            else if(startTime == 0){
+                startTime = 30;
+                startTimeSelection.innerHTML = `
+                    <h1>0s</h1>
+                    <h2>30s</h2>
+                    <h1>60s</h1>
+                `;
+            }
+        }
+    </script>
 </body>
 <footer>
-    <h1>Created by Bain v1.2.35</h1>
+    <h1>Created by Bain v1.5.0</h1>
 </footer>
 </html>

@@ -18,7 +18,7 @@ app.use(express.static('public'));
 const users = [];
 const games = [];
 
-function updateGameData(game){
+function updateGameData(game, updateType){
     for(let j = 0; j < game.gameUsers.length; j++){
         io.to(game.gameUsers[j].userSocketId).emit('updateGameData', {
             gameWinner: game.gameWinner,
@@ -34,10 +34,16 @@ function updateGameData(game){
                 userSocketId: user.userSocketId,
                 userScore: user.userScore,
                 userGuess: user.userGuess,
+                userTracks: user.userTracks
             })),
+            gameStartTime: game.gameStartTime,
             gameCurrentTrackId: game.gameCurrentTrackId,
+            gameCurrentTrackName: game.gameCurrentTrackName,
+            gameCurrentTrackArtist: game.gameCurrentTrackArtist,
             gameState: game.gameState,
             playersWithTrack: game.playersWithTrack,
+            playersWhoveVoted: game.playersWhoveVoted,
+            updateType: updateType,
         });
     }
 }
@@ -59,6 +65,8 @@ function nextTrack(game){
         randomTrack = randomUser.userTracks[randomTrackIndex];
     }
     game.gameCurrentTrackId = randomTrack.id;
+    game.gameCurrentTrackName = randomTrack.name;
+    game.gameCurrentTrackArtist = randomTrack.artist;
     game.playedTracks.push(randomTrack.id);
 }
 function checkEndGame(game){
@@ -84,13 +92,52 @@ function checkEndGame(game){
     }
 }
 function processGuesses(game){
+    // Get the base track name and artist by removing common version indicators
+    const baseTrackName = game.gameCurrentTrackName
+        .toLowerCase()
+        .replace(/\s*\(.*?\)/g, '') // Remove anything in parentheses
+        .replace(/\s*\[.*?\]/g, '') // Remove anything in brackets
+        .replace(/\s*[-–—].*$/g, '') // Remove anything after a dash
+        .replace(/\s*feat\..*$/i, '') // Remove "feat." and anything after
+        .replace(/\s*ft\..*$/i, '') // Remove "ft." and anything after
+        .replace(/\s*with.*$/i, '') // Remove "with" and anything after
+        .replace(/\s*\(remix\)/gi, '') // Remove "(remix)"
+        .replace(/\s*\(live version\)/gi, '') // Remove "(live version)"
+        .replace(/\s*\(live\)/gi, '') // Remove "(live)"
+        .replace(/\s*\(version\)/gi, '') // Remove "(version)"
+        .replace(/\s*\(edit\)/gi, '') // Remove "(edit)"
+        .trim();
+
+    const baseArtist = game.gameCurrentTrackArtist ? game.gameCurrentTrackArtist.toLowerCase() : '';
+
+    console.log(baseTrackName + " - " + baseArtist);
+
     for(let i = 0; i < game.gameUsers.length; i++){
         const player = game.gameUsers[i];
         for(let j = 0; j < player.userGuess.length; j++){
             const guessedUserId = player.userGuess[j];
             const guessedUser = game.gameUsers.find(user => user.userId == guessedUserId);
             if(guessedUser){
-                const trackFound = guessedUser.userTracks.some(track => track.id == game.gameCurrentTrackId);
+                const trackFound = guessedUser.userTracks.some(track => {
+                    const userTrackBaseName = track.name
+                        .toLowerCase()
+                        .replace(/\s*\(.*?\)/g, '')
+                        .replace(/\s*\[.*?\]/g, '')
+                        .replace(/\s*[-–—].*$/g, '')
+                        .replace(/\s*feat\..*$/i, '')
+                        .replace(/\s*ft\..*$/i, '')
+                        .replace(/\s*with.*$/i, '')
+                        .replace(/\s*\(remix\)/gi, '')
+                        .replace(/\s*\(live version\)/gi, '')
+                        .replace(/\s*\(live\)/gi, '')
+                        .replace(/\s*\(version\)/gi, '')
+                        .replace(/\s*\(edit\)/gi, '')
+                        .trim();
+
+                    const userTrackBaseArtist = track.artist ? track.artist.toLowerCase() : '';
+
+                    return userTrackBaseName === baseTrackName && userTrackBaseArtist === baseArtist;
+                });
                 if (trackFound) {
                     player.userScore += 3;
                 }
@@ -103,9 +150,46 @@ function processGuesses(game){
     game.currentTrackId = "continue";
 }
 function getPlayersWithCurrentTrack(game){
+    // Get the base track name and artist by removing common version indicators
+    const baseTrackName = game.gameCurrentTrackName
+        .toLowerCase()
+        .replace(/\s*\(.*?\)/g, '') // Remove anything in parentheses
+        .replace(/\s*\[.*?\]/g, '') // Remove anything in brackets
+        .replace(/\s*[-–—].*$/g, '') // Remove anything after a dash
+        .replace(/\s*feat\..*$/i, '') // Remove "feat." and anything after
+        .replace(/\s*ft\..*$/i, '') // Remove "ft." and anything after
+        .replace(/\s*with.*$/i, '') // Remove "with" and anything after
+        .replace(/\s*\(remix\)/gi, '') // Remove "(remix)"
+        .replace(/\s*\(live version\)/gi, '') // Remove "(live version)"
+        .replace(/\s*\(live\)/gi, '') // Remove "(live)"
+        .replace(/\s*\(version\)/gi, '') // Remove "(version)"
+        .replace(/\s*\(edit\)/gi, '') // Remove "(edit)"
+        .trim();
+
+    const baseArtist = game.gameCurrentTrackArtist ? game.gameCurrentTrackArtist.toLowerCase() : '';
+
     game.playersWithTrack = game.gameUsers
         .filter(user => 
-            user.userTracks.some(track => track.id == game.gameCurrentTrackId)
+            user.userTracks.some(track => {
+                const userTrackBaseName = track.name
+                    .toLowerCase()
+                    .replace(/\s*\(.*?\)/g, '')
+                    .replace(/\s*\[.*?\]/g, '')
+                    .replace(/\s*[-–—].*$/g, '')
+                    .replace(/\s*feat\..*$/i, '')
+                    .replace(/\s*ft\..*$/i, '')
+                    .replace(/\s*with.*$/i, '')
+                    .replace(/\s*\(remix\)/gi, '')
+                    .replace(/\s*\(live version\)/gi, '')
+                    .replace(/\s*\(live\)/gi, '')
+                    .replace(/\s*\(version\)/gi, '')
+                    .replace(/\s*\(edit\)/gi, '')
+                    .trim();
+
+                const userTrackBaseArtist = track.artist ? track.artist.toLowerCase() : '';
+
+                return userTrackBaseName === baseTrackName && userTrackBaseArtist === baseArtist;
+            })
         )
         .map(user => user.userId);
 }
@@ -132,7 +216,7 @@ io.on('connection', (socket) => {
                 data.user.userSocketId = socket.id
                 data.user.userScore = 0
                 games[i].gameUsers.push(data.user);
-                updateGameData(games[i]);
+                updateGameData(games[i], "hard");
                 break;
             }
         }
@@ -147,15 +231,19 @@ io.on('connection', (socket) => {
             gameCode: data.gameCode,
             gameHost: data.user,
             gameUsers: [data.user],
+            gameStartTime: data.startTime,
             gameCurrentTrackId: "",
+            gameCurrentTrackName: "",
+            gameCurrentTrackArtist: "",
             gameState: "lobby",
             gameContinueVotes: 0,
+            playersWhoveVoted: [],
             playersWithTrack: [],
             playedTracks: [],
             gameWinner: "",
         });
         socket.emit('gameCreated');
-        updateGameData(games[games.length - 1]);
+        updateGameData(games[games.length - 1], "hard");
         console.clear();
         console.log("Users: " + users.length + "\nGames: " + games.length);
     });
@@ -164,7 +252,7 @@ io.on('connection', (socket) => {
             if(games[i].gameHost.userId == data.userId){
                 games[i].gameState = "voting";
                 nextTrack(games[i]);
-                updateGameData(games[i]);
+                updateGameData(games[i], "hard");
                 break;
             }
         }
@@ -206,14 +294,17 @@ io.on('connection', (socket) => {
                 for(let j = 0; j < games[i].gameUsers.length; j++){
                     if(games[i].gameUsers[j].userGuess.length > 0){
                         gameSubmitCount = gameSubmitCount + 1;
+                        games[i].playersWhoveVoted.push(games[i].gameUsers[j].userId);
+                        updateGameData(games[i], "soft");
                     }
                 }
                 if(gameSubmitCount >= games[i].gameUsers.length){
+                    games[i].playersWhoveVoted = [];
                     games[i].gameState = "continuing";
                     getPlayersWithCurrentTrack(games[i]);
                     processGuesses(games[i]);
                     checkEndGame(games[i]);
-                    updateGameData(games[i]);
+                    updateGameData(games[i], "hard");
                 }
             }
         }
@@ -222,14 +313,17 @@ io.on('connection', (socket) => {
         for(let i = 0; i < games.length; i++){
             if(games[i].gameCode == data.gameCode){
                 games[i].gameContinueVotes += 1;
+                games[i].playersWhoveVoted.push(data.userId);
+                updateGameData(games[i], "soft");
                 if(games[i].gameContinueVotes >= games[i].gameUsers.length){
                     games[i].gameContinueVotes = 0;
                     games[i].gameState = "voting";
                     for(let j = 0; j < games[i].gameUsers.length; j++){
                         games[i].gameUsers[j].userGuess = [];
                     }
+                    games[i].playersWhoveVoted = [];
                     nextTrack(games[i]);
-                    updateGameData(games[i]);
+                    updateGameData(games[i], "hard");
                 }
             }
         }
@@ -238,7 +332,7 @@ io.on('connection', (socket) => {
         for(let i = 0; i < games.length; i++){
             if(games[i].gameCode == data.gameCode){
                 resetGame(games[i]);
-                updateGameData(games[i]);
+                updateGameData(games[i], "hard");
             }
         }
     });
@@ -252,7 +346,7 @@ io.on('connection', (socket) => {
             for(let j = 0; j < games[i].gameUsers.length; j++){
                 if(games[i].gameUsers[j].userSocketId == socket.id){
                     games[i].gameUsers.splice(j, 1);
-                    updateGameData(games[i]);
+                    updateGameData(games[i], "hard");
                     break;
                 }
             }

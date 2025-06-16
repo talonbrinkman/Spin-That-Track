@@ -111,6 +111,7 @@ async function getData(){
             user.userTracks.push({
                 "name": item.track.name,
                 "id": item.track.id,
+                "artist": item.track.artists[0].name
             });
         });
     }
@@ -165,6 +166,7 @@ async function getData(){
                         user.userTracks.push({
                             name: item.track.name,
                             id: item.track.id,
+                            artist: item.track.artists[0].name
                         });
                     }
                 });
@@ -193,6 +195,7 @@ async function getData(){
             user.userTracks.push({
                 "name": item.track.name,
                 "id": item.track.id,
+                "artist": item.track.artists[0].name
             });
         });
     }
@@ -233,7 +236,6 @@ async function getData(){
         socket.emit('checkGame', {
             id: localStorage.getItem('gameCode'),
         });
-
     }
 
     document.getElementById("displayName").style.display = "block"
@@ -251,6 +253,8 @@ async function getData(){
     else{
         document.getElementById("playBackDevices").style.display = "none";
     }
+
+    document.getElementById("startTimeSelection").style.display = "flex";
 
     document.getElementById("joinButton").style.display = "block";
     document.getElementById("createButton").style.display = "block";
@@ -283,14 +287,14 @@ async function getTrack(trackId){
         return null;
     }
 }
-async function changeTrack(trackId){
+async function changeTrack(trackId, startTime){
     if(chosenPlayBackDevice.name && chosenPlayBackDevice.id){
         try{
             await axios.put(
                 `https://api.spotify.com/v1/me/player/play?device_id=${chosenPlayBackDevice.id}`,
                 {
                     uris: [`spotify:track:${trackId}`],
-                    position_ms: 30000,
+                    position_ms: (startTime * 1000),
                 },
                 {
                     headers: {
@@ -313,7 +317,7 @@ async function changeTrack(trackId){
                 `https://api.spotify.com/v1/me/player/play`,
                 {
                     uris: [`spotify:track:${trackId}`],
-                    position_ms: 30000,
+                    position_ms: (startTime * 1000),
                 },
                 {
                     headers: {
@@ -394,6 +398,7 @@ document.getElementById("users").style.display = "none";
 document.getElementById("displayName").style.display = "none";
 document.getElementById("gameCode").style.display = "none";
 document.getElementById("playBackDevices").style.display = "none";
+document.getElementById("startTimeSelection").style.display = "none";
 document.getElementById("joinButton").style.display = "none";
 document.getElementById("createButton").style.display = "none";
 document.getElementById("startButton").style.display = "none";
@@ -439,6 +444,7 @@ document.getElementById("joinButton").addEventListener('click', function(){
         gameCode = document.getElementById("gameCode").value;
         document.getElementById("displayName").style.display = "none"
         document.getElementById("gameCode").style.display = "none"
+        document.getElementById("startTimeSelection").style.display = "none";
         document.getElementById("joinButton").style.display = "none";
         document.getElementById("createButton").style.display = "none";
         
@@ -464,11 +470,13 @@ document.getElementById("createButton").addEventListener('click', function(){
             gameCode: gameCode,
             gameHost: user,
             user: user,
+            startTime: startTime,
         });
 
         socket.on('gameCreated', (data) => {
             document.getElementById("displayName").style.display = "none"
             document.getElementById("gameCode").style.display = "none"
+            document.getElementById("startTimeSelection").style.display = "none";
             document.getElementById("joinButton").style.display = "none";
             document.getElementById("createButton").style.display = "none";
             host = true;
@@ -502,6 +510,7 @@ document.getElementById("continueButton").addEventListener('click', function(){
     user.userGuess = 0;
     socket.emit('continueGame', {
         gameCode: gameCode,
+        userId: user.userId,
     });
     document.getElementById("continueButton").style.display = "none";
 });
@@ -514,247 +523,260 @@ document.getElementById("lobbyButton").addEventListener('click', function(){
 
 socket.on('updateGameData', async function(data){
     console.log(data);
-    if(data.gameState == "lobby"){
-        voted = false;
-        document.getElementById("gameInfo").style.display = "block";
-        document.getElementById("gameInfo").style.fontSize = "150%";
-        document.getElementById("gameInfo").innerHTML = data.gameHost.userName + "'s Game" + '<br>' + data.gameCode;
-
-        document.getElementById("winnerGif").style.display = "none";
-
-        document.getElementById("currentTrack").style.display = "none";
-
-        document.getElementById("users").style.display = "flex";
+    if(data.updateType == "soft"){
         const usersDiv = document.getElementById("users");
-        usersDiv.innerHTML = "";
-        data.gameUsers.forEach(gameUser => {
-            const userDiv = document.createElement('div');
-            userDiv.style.pointerEvents = "none";
-            userDiv.classList.add('user');
-            userDiv.id = 'user-' + gameUser.userId;
-
-            const userName = document.createElement('h1');
-            userName.innerText = gameUser.userName;
-
-            const userScore = document.createElement('h1');
-
-            userDiv.appendChild(userName);
-            userDiv.appendChild(userScore);
-            usersDiv.appendChild(userDiv);
-        });
-
-        document.getElementById("playBackDevices").style.display = "none";
-
-        if(user.userId == data.gameHost.userId){
-            document.getElementById("startButton").style.display = "block";
-        }
-        else{
-            document.getElementById("startButton").style.display = "none";
-        }
-        document.getElementById("continueButton").style.display = "none";
-        document.getElementById("submitButton").style.display = "none";
-        document.getElementById("lobbyButton").style.display = "none";
-    }
-    else if(data.gameState == "voting"){
-        document.getElementById("gameInfo").style.display = "none";
-        document.getElementById("playBackDevices").style.display = "none";
-        
-        const track = await getTrack(data.gameCurrentTrackId);
-        document.getElementById("currentTrack").style.display = "flex";
-        document.getElementById("currentTrackImage").src = track.images[0].url;
-        document.getElementById("currentTrackName").innerHTML = track.name;
-        document.getElementById("currentTrackArtists").innerHTML = "";
-        for(let i = 0; i < track.artists.length; i++){
-            document.getElementById("currentTrackArtists").innerHTML += track.artists[i].name;
-            if(i != track.artists.length - 1){
-                document.getElementById("currentTrackArtists").innerHTML += ", ";
+        Array.from(usersDiv.children).forEach(userDiv => {
+            var currentUserId = userDiv.getAttribute("id");
+            const h1 = userDiv.getElementsByTagName("h1")[0];
+            if(data.playersWhoveVoted.some(votedId => currentUserId.includes(votedId)) && !h1.innerHTML.includes("⚑")){
+                h1.innerHTML = h1.innerHTML + " ⚑";
             }
+        });
+    }
+    else if(data.updateType == "hard"){
+        if(data.gameState == "lobby"){
+            voted = false;
+            document.getElementById("gameInfo").style.display = "block";
+            document.getElementById("gameInfo").style.fontSize = "150%";
+            document.getElementById("gameInfo").innerHTML = data.gameHost.userName + "'s Game" + '<br>' + data.gameCode;
+    
+            document.getElementById("winnerGif").style.display = "none";
+    
+            document.getElementById("currentTrack").style.display = "none";
+    
+            document.getElementById("users").style.display = "flex";
+            const usersDiv = document.getElementById("users");
+            usersDiv.innerHTML = "";
+            data.gameUsers.forEach(gameUser => {
+                const userDiv = document.createElement('div');
+                userDiv.style.pointerEvents = "none";
+                userDiv.classList.add('user');
+                userDiv.id = 'user-' + gameUser.userId;
+    
+                const userName = document.createElement('h1');
+                userName.innerText = gameUser.userName;
+    
+                const userScore = document.createElement('h1');
+    
+                userDiv.appendChild(userName);
+                userDiv.appendChild(userScore);
+                usersDiv.appendChild(userDiv);
+            });
+    
+            document.getElementById("playBackDevices").style.display = "none";
+    
+            if(user.userId == data.gameHost.userId){
+                document.getElementById("startButton").style.display = "block";
+            }
+            else{
+                document.getElementById("startButton").style.display = "none";
+            }
+            document.getElementById("continueButton").style.display = "none";
+            document.getElementById("submitButton").style.display = "none";
+            document.getElementById("lobbyButton").style.display = "none";
         }
-        await changeTrack(data.gameCurrentTrackId);
-
-        document.getElementById("users").style.display = "flex";
-        const usersDiv = document.getElementById("users");
-        usersDiv.innerHTML = "";
-        data.gameUsers.forEach(gameUser => {
-            const userDiv = document.createElement('div');
-            userDiv.classList.add('user');
-            userDiv.id = 'user-' + gameUser.userId;
-            user.userGuess = [];
-            userDiv.onclick = function(){
-                if(voted == false){
-                    const element = document.getElementById('user-' + gameUser.userId);
-                    if(element.style.backgroundColor != 'var(--gold)'){
-                        element.style.backgroundColor = 'var(--gold)';
-                        user.userGuess.push(gameUser.userId);
+        else if(data.gameState == "voting"){
+            document.getElementById("gameInfo").style.display = "none";
+            document.getElementById("playBackDevices").style.display = "none";
+            
+            const track = await getTrack(data.gameCurrentTrackId);
+            document.getElementById("currentTrack").style.display = "flex";
+            document.getElementById("currentTrackImage").src = track.images[0].url;
+            document.getElementById("currentTrackName").innerHTML = track.name;
+            document.getElementById("currentTrackArtists").innerHTML = "";
+            for(let i = 0; i < track.artists.length; i++){
+                document.getElementById("currentTrackArtists").innerHTML += track.artists[i].name;
+                if(i != track.artists.length - 1){
+                    document.getElementById("currentTrackArtists").innerHTML += ", ";
+                }
+            }
+            await changeTrack(data.gameCurrentTrackId, data.gameStartTime);
+    
+            document.getElementById("users").style.display = "flex";
+            const usersDiv = document.getElementById("users");
+            usersDiv.innerHTML = "";
+            data.gameUsers.forEach(gameUser => {
+                const userDiv = document.createElement('div');
+                userDiv.classList.add('user');
+                userDiv.id = 'user-' + gameUser.userId;
+                user.userGuess = [];
+                userDiv.onclick = function(){
+                    if(voted == false){
+                        const element = document.getElementById('user-' + gameUser.userId);
+                        if(element.style.backgroundColor != 'var(--gold)'){
+                            element.style.backgroundColor = 'var(--gold)';
+                            user.userGuess.push(gameUser.userId);
+                        }
+                        else{
+                            element.style.backgroundColor = 'var(--lightGrey)';
+                            user.userGuess.splice(user.userGuess.indexOf(gameUser.userId), 1);
+                        }
+                    }
+                }
+    
+                const userName = document.createElement('h1');
+                userName.innerText = gameUser.userName;
+    
+                const userScore = document.createElement('h1');
+                userScore.innerText = gameUser.userScore;
+    
+                userDiv.appendChild(userName);
+                userDiv.appendChild(userScore);
+                usersDiv.appendChild(userDiv);
+            });
+    
+            document.getElementById("continueButton").style.display = "none";
+            document.getElementById("submitButton").style.display = "block";
+            document.getElementById("lobbyButton").style.display = "none";
+        }
+        else if(data.gameState == "continuing"){
+            voted = false;
+            document.getElementById("gameInfo").style.display = "none";
+    
+            document.getElementById("users").style.display = "flex";
+            const usersDiv = document.getElementById("users");
+            usersDiv.innerHTML = "";
+            data.gameUsers.forEach(gameUser => {
+                const userDiv = document.createElement('div');
+                userDiv.style.pointerEvents = "none";
+                userDiv.classList.add('user');
+                userDiv.id = 'user-' + gameUser.userId;
+                
+                const userName = document.createElement('h1');
+                const userGuesses = document.createElement('h1');
+                const userScore = document.createElement('h1');
+    
+                userGuesses.style.whiteSpace = "break-spaces";
+    
+                if(data.playersWithTrack.includes(gameUser.userId)){
+                    userName.innerText = "✓ " + gameUser.userName;
+                }
+                else{
+                    userName.innerHTML = gameUser.userName;
+                }
+    
+                if(user.userGuess.includes(gameUser.userId)){
+                    if(user.userGuess.includes(gameUser.userId) && data.playersWithTrack.includes(gameUser.userId)){
+                        userDiv.style.backgroundColor = 'var(--gold)';
                     }
                     else{
-                        element.style.backgroundColor = 'var(--lightGrey)';
-                        user.userGuess.splice(user.userGuess.indexOf(gameUser.userId), 1);
+                        userDiv.style.backgroundColor = 'var(--red)';
                     }
-                }
-            }
-
-            const userName = document.createElement('h1');
-            userName.innerText = gameUser.userName;
-
-            const userScore = document.createElement('h1');
-            userScore.innerText = gameUser.userScore;
-
-            userDiv.appendChild(userName);
-            userDiv.appendChild(userScore);
-            usersDiv.appendChild(userDiv);
-        });
-
-        document.getElementById("continueButton").style.display = "none";
-        document.getElementById("submitButton").style.display = "block";
-        document.getElementById("lobbyButton").style.display = "none";
-    }
-    else if(data.gameState == "continuing"){
-        voted = false;
-        document.getElementById("gameInfo").style.display = "none";
-
-        document.getElementById("users").style.display = "flex";
-        const usersDiv = document.getElementById("users");
-        usersDiv.innerHTML = "";
-        data.gameUsers.forEach(gameUser => {
-            const userDiv = document.createElement('div');
-            userDiv.style.pointerEvents = "none";
-            userDiv.classList.add('user');
-            userDiv.id = 'user-' + gameUser.userId;
-            
-            const userName = document.createElement('h1');
-            const userGuesses = document.createElement('h1');
-            const userScore = document.createElement('h1');
-
-            userGuesses.style.whiteSpace = "break-spaces";
-
-            if(data.playersWithTrack.includes(gameUser.userId)){
-                userName.innerText = "✓ " + gameUser.userName;
-            }
-            else{
-                userName.innerHTML = gameUser.userName;
-            }
-
-            if(user.userGuess.includes(gameUser.userId)){
-                if(user.userGuess.includes(gameUser.userId) && data.playersWithTrack.includes(gameUser.userId)){
-                    userDiv.style.backgroundColor = 'var(--gold)';
                 }
                 else{
-                    userDiv.style.backgroundColor = 'var(--red)';
+                    userDiv.style.backgroundColor = 'var(--lightGrey)';
                 }
-            }
-            else{
-                userDiv.style.backgroundColor = 'var(--lightGrey)';
-            }
-
-            let guesses = [];
-            for(let i = 0; i < gameUser.userGuess.length; i++){
-                for(let j = 0; j < data.gameUsers.length; j++){
-                    if(data.gameUsers[j].userId == gameUser.userGuess[i]){
-                        guesses.push(data.gameUsers[j].userName);
+    
+                let guesses = [];
+                for(let i = 0; i < gameUser.userGuess.length; i++){
+                    for(let j = 0; j < data.gameUsers.length; j++){
+                        if(data.gameUsers[j].userId == gameUser.userGuess[i]){
+                            guesses.push(data.gameUsers[j].userName);
+                        }
                     }
                 }
-            }
-            userGuesses.innerText = guesses.join(", ");
-            
-            userScore.innerText = gameUser.userScore;
-
-            userDiv.appendChild(userName);
-            userDiv.appendChild(userGuesses);
-            userDiv.appendChild(userScore);
-            usersDiv.appendChild(userDiv);
-        });
-
-        document.getElementById("continueButton").style.display = "block";
-        document.getElementById("submitButton").style.display = "none";
-        document.getElementById("lobbyButton").style.display = "none";
-    }
-    else if(data.gameState == "winner"){
-        voted = false;
-        document.getElementById("gameInfo").style.display = "none";
-        document.getElementById("winnerInfo").innerHTML = data.gameWinner + " Wins";
-        const myImages = [
-            "images/winner images/1.jpg",
-            "images/winner images/2.jpg",
-            "images/winner images/3.jpg",
-            "images/winner images/4.jpg",
-            "images/winner images/5.jpg",
-            "images/winner images/6.jpg",
-            "images/winner images/7.jpg",
-            "images/winner images/8.jpg",
-            "images/winner images/9.jpg",
-            "images/winner images/10.jpg",
-            "images/winner images/11.jpg",
-            "images/winner images/12.jpg",
-            "images/winner images/13.jpg",
-            "images/winner images/14.jpg",
-            "images/winner images/15.jpg",
-        ]
-        const randomImage = myImages[Math.floor(Math.random() * myImages.length)];
-        document.getElementById("winnerImage").src = randomImage;
-        document.getElementById("winnerGif").style.display = "flex";
-
-        document.getElementById("currentTrack").style.display = "none";
-
-        document.getElementById("users").style.display = "flex";
-        const usersDiv = document.getElementById("users");
-        usersDiv.innerHTML = "";
-        data.gameUsers.forEach(gameUser => {
-            const userDiv = document.createElement('div');
-            userDiv.style.pointerEvents = "none";
-            userDiv.classList.add('user');
-            userDiv.id = 'user-' + gameUser.userId;
-            
-            const userName = document.createElement('h1');
-            const userGuesses = document.createElement('h1');
-            const userScore = document.createElement('h1');
-
-            userGuesses.style.whiteSpace = "break-spaces";
-
-            if(data.playersWithTrack.includes(gameUser.userId)){
-                userName.innerText = "✓ " + gameUser.userName;
-            }
-            else{
-                userName.innerHTML = gameUser.userName;
-            }
-
-            if(user.userGuess.includes(gameUser.userId)){
-                if(user.userGuess.includes(gameUser.userId) && data.playersWithTrack.includes(gameUser.userId)){
-                    userDiv.style.backgroundColor = 'var(--gold)';
-                }
-                else{
-                    userDiv.style.backgroundColor = 'var(--red)';
-                }
-            }
-            else{
-                userDiv.style.backgroundColor = 'var(--lightGrey)';
-            }
-
-            let guesses = [];
-            for(let i = 0; i < gameUser.userGuess.length; i++){
-                for(let j = 0; j < data.gameUsers.length; j++){
-                    if(data.gameUsers[j].userId == gameUser.userGuess[i]){
-                        guesses.push(data.gameUsers[j].userName);
-                    }
-                }
-            }
-            userGuesses.innerText = guesses.join(", ");
-            
-            userScore.innerText = gameUser.userScore;
-
-            userDiv.appendChild(userName);
-            userDiv.appendChild(userGuesses);
-            userDiv.appendChild(userScore);
-            usersDiv.appendChild(userDiv);
-        });
-
-        document.getElementById("continueButton").style.display = "none";
-        document.getElementById("submitButton").style.display = "none";
-        if(user.userId == data.gameHost.userId){
-            document.getElementById("lobbyButton").style.display = "block";
-        }
-        else{
+                userGuesses.innerText = guesses.join(", ");
+                
+                userScore.innerText = gameUser.userScore;
+    
+                userDiv.appendChild(userName);
+                userDiv.appendChild(userGuesses);
+                userDiv.appendChild(userScore);
+                usersDiv.appendChild(userDiv);
+            });
+    
+            document.getElementById("continueButton").style.display = "block";
+            document.getElementById("submitButton").style.display = "none";
             document.getElementById("lobbyButton").style.display = "none";
+        }
+        else if(data.gameState == "winner"){
+            voted = false;
+            document.getElementById("gameInfo").style.display = "none";
+            document.getElementById("winnerInfo").innerHTML = data.gameWinner + " Wins";
+            const myImages = [
+                "images/winner images/1.jpg",
+                "images/winner images/2.jpg",
+                "images/winner images/3.jpg",
+                "images/winner images/4.jpg",
+                "images/winner images/5.jpg",
+                "images/winner images/6.jpg",
+                "images/winner images/7.jpg",
+                "images/winner images/8.jpg",
+                "images/winner images/9.jpg",
+                "images/winner images/10.jpg",
+                "images/winner images/11.jpg",
+                "images/winner images/12.jpg",
+                "images/winner images/13.jpg",
+                "images/winner images/14.jpg",
+                "images/winner images/15.jpg",
+                "images/winner images/16.jpg",
+            ]
+            const randomImage = myImages[Math.floor(Math.random() * myImages.length)];
+            document.getElementById("winnerImage").src = randomImage;
+            document.getElementById("winnerGif").style.display = "flex";
+    
+            document.getElementById("currentTrack").style.display = "none";
+    
+            document.getElementById("users").style.display = "flex";
+            const usersDiv = document.getElementById("users");
+            usersDiv.innerHTML = "";
+            data.gameUsers.forEach(gameUser => {
+                const userDiv = document.createElement('div');
+                userDiv.style.pointerEvents = "none";
+                userDiv.classList.add('user');
+                userDiv.id = 'user-' + gameUser.userId;
+                
+                const userName = document.createElement('h1');
+                const userGuesses = document.createElement('h1');
+                const userScore = document.createElement('h1');
+    
+                userGuesses.style.whiteSpace = "break-spaces";
+    
+                if(data.playersWithTrack.includes(gameUser.userId)){
+                    userName.innerText = "✓ " + gameUser.userName;
+                }
+                else{
+                    userName.innerHTML = gameUser.userName;
+                }
+    
+                if(user.userGuess.includes(gameUser.userId)){
+                    if(user.userGuess.includes(gameUser.userId) && data.playersWithTrack.includes(gameUser.userId)){
+                        userDiv.style.backgroundColor = 'var(--gold)';
+                    }
+                    else{
+                        userDiv.style.backgroundColor = 'var(--red)';
+                    }
+                }
+                else{
+                    userDiv.style.backgroundColor = 'var(--lightGrey)';
+                }
+    
+                let guesses = [];
+                for(let i = 0; i < gameUser.userGuess.length; i++){
+                    for(let j = 0; j < data.gameUsers.length; j++){
+                        if(data.gameUsers[j].userId == gameUser.userGuess[i]){
+                            guesses.push(data.gameUsers[j].userName);
+                        }
+                    }
+                }
+                userGuesses.innerText = guesses.join(", ");
+                
+                userScore.innerText = gameUser.userScore;
+    
+                userDiv.appendChild(userName);
+                userDiv.appendChild(userGuesses);
+                userDiv.appendChild(userScore);
+                usersDiv.appendChild(userDiv);
+            });
+    
+            document.getElementById("continueButton").style.display = "none";
+            document.getElementById("submitButton").style.display = "none";
+            if(user.userId == data.gameHost.userId){
+                document.getElementById("lobbyButton").style.display = "block";
+            }
+            else{
+                document.getElementById("lobbyButton").style.display = "none";
+            }
         }
     }
 });
