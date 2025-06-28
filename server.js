@@ -22,6 +22,7 @@ function updateGameData(game, updateType){
     for(let j = 0; j < game.gameUsers.length; j++){
         io.to(game.gameUsers[j].userSocketId).emit('updateGameData', {
             gameWinner: game.gameWinner,
+            gameWinnerImageIndex: game.gameWinnerImageIndex,
             gameCode: game.gameCode,
             gameHost: game.gameHost,
             gameHost: {
@@ -88,6 +89,7 @@ function checkEndGame(game){
         game.gameCurrentTrackId = "";
         game.gameState = "winner";
         game.gameWinner = highestScorers[0].userName;
+        game.gameWinnerImageIndex = Math.floor(Math.random() * 17);
         return highestScorers[0].userName;
     }
 }
@@ -241,6 +243,7 @@ io.on('connection', (socket) => {
             playersWithTrack: [],
             playedTracks: [],
             gameWinner: "",
+            gameWinnerImageIndex: 0,
         });
         socket.emit('gameCreated');
         updateGameData(games[games.length - 1], "hard");

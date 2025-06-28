@@ -731,7 +731,8 @@ socket.on('updateGameData', async function(data){
                 "images/winner images/15.jpg",
                 "images/winner images/16.jpg",
             ]
-            const randomImage = myImages[Math.floor(Math.random() * myImages.length)];
+            // const randomImage = myImages[Math.floor(Math.random() * myImages.length)];
+            const randomImage = myImages[data.gameWinnerImageIndex];
             document.getElementById("winnerImage").src = randomImage;
             document.getElementById("winnerGif").style.display = "flex";
     
