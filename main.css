@@ -1,4 +1,5 @@
 :root{
+    --client: #e6d196;
     --gold: #e6d196;
     --red: #ff5447;
     --green: #1db954;
@@ -61,7 +62,7 @@ header h1{
     position: relative;
     background: linear-gradient(
         to right,
-        var(--gold) 80%,
+        var(--client) 80%,
         white 100%
     );
     -webkit-background-clip: text;
@@ -72,16 +73,16 @@ header h1{
     animation: textShine 2s linear infinite;
 }
 header h1:hover{
-    text-shadow: 0 0 20px var(--gold);
+    text-shadow: 0 0 20px var(--client);
 }
 header button{
     position: absolute;
     left: calc(100% + 10px);
     height: 25px;
     width: auto;
-    color: var(--gold);
+    color: var(--client);
     background-color: transparent;
-    border: 3px solid var(--gold);
+    border: 3px solid var(--client);
     margin: 0 auto;
     outline: none;
     text-align: center;
@@ -90,7 +91,7 @@ header button{
 }
 header button:hover{
     color: black;
-    background-color: var(--gold);
+    background-color: var(--client);
 }
 header h1 img{
     position: absolute;
@@ -145,7 +146,7 @@ header h1 img{
     padding: 30px;
     overflow: hidden;
     flex-grow: 1;
-    /* border: 6px solid var(--gold); */
+    /* border: 6px solid var(--client); */
 }
 .game #currentTrack img{
     min-width: 0; 
@@ -153,8 +154,8 @@ header h1 img{
     max-width: 100%;
     height: auto;
     aspect-ratio: 1;
-    /* box-shadow: 0 0 30px var(--gold); */
-    /* border: 6px solid var(--gold); */
+    /* box-shadow: 0 0 30px var(--client); */
+    /* border: 6px solid var(--client); */
 }
 .game #winnerGif img{
     min-width: 0; 
@@ -177,7 +178,7 @@ header h1 img{
     background: linear-gradient(
         to right,
         white 80%,
-        var(--gold) 100%
+        var(--client) 100%
     );
     -webkit-background-clip: text;
     background-clip: text;
@@ -243,9 +244,9 @@ header h1 img{
     text-align: center;
 }
 .game input:not(:placeholder-shown), .game input:focus{
-    color: var(--gold);
+    color: var(--client);
     border: none;
-    border-bottom: 2px solid var(--gold);
+    border-bottom: 2px solid var(--client);
     border-radius: 0;
 }
 .game input::placeholder{
@@ -255,9 +256,9 @@ header h1 img{
 .game select{
     display: block;
     width: 100%;
-    color: var(--gold);
+    color: var(--client);
     background-color: transparent;
-    border: 3px solid var(--gold);
+    border: 3px solid var(--client);
     margin: 0 auto;
     padding: 15px 20px;
     outline: none;
@@ -270,12 +271,12 @@ header h1 img{
 }
 .game select:hover{
     color: black;
-    background-color: var(--gold);
+    background-color: var(--client);
 }
 .game option{
-    color: var(--gold);
+    color: var(--client);
     background-color: black;
-    border: 3px solid var(--gold);
+    border: 3px solid var(--client);
     padding: 15px 20px;
     text-align: center;
     cursor: pointer;
@@ -283,9 +284,9 @@ header h1 img{
 .game button{
     display: block;
     width: 100%;
-    color: var(--gold);
+    color: var(--client);
     background-color: transparent;
-    border: 3px solid var(--gold);
+    border: 3px solid var(--client);
     margin: 0 auto;
     padding: 15px 20px;
     outline: none;
@@ -294,14 +295,14 @@ header h1 img{
 }
 .game button:hover{
     color: black;
-    background-color: var(--gold);
+    background-color: var(--client);
 }
 .game #startTimeSelection{
     display: flex;
     width: 100%;
-    color: var(--gold);
+    color: var(--client);
     background-color: transparent;
-    border: 3px solid var(--gold);
+    border: 3px solid var(--client);
     margin: 0 auto;
     padding: 5px 5px;
     outline: none;
@@ -310,16 +311,16 @@ header h1 img{
     justify-content: space-between;
 }
 .game #startTimeSelection:hover{
-    color: var(--gold);
-    background-color: var(--gold);
+    color: var(--client);
+    background-color: var(--client);
 }
 .game #startTimeSelection:hover h1{
     color: black;
     background-color: transparent;
-    border-color: var(--gold);
+    border-color: var(--client);
 }
 .game #startTimeSelection:hover h2{
-    color: var(--gold);
+    color: var(--client);
     background-color: black;
     border-color: black;
 }
@@ -339,7 +340,7 @@ header h1 img{
     justify-content: center;
     border-radius: 10px;
     color: black;
-    background-color: var(--gold);
+    background-color: var(--client);
 }
 #leaveButton{
     display: block;
@@ -374,6 +375,9 @@ footer h1{
     justify-content: center;
     margin: 0;
     position: relative;
+}
+#createdBy {
+    color: var(--createdBy);
 }
 /*Scrollbar*/
 ::-webkit-scrollbar{
@@ -410,7 +414,7 @@ input[type=number] {
 /*Spinning Wheel*/
 .loader{
     border: 8px solid var(--darkGrey);
-    border-top: 8px solid var(--gold);
+    border-top: 8px solid var(--client);
     border-radius: 50%;
     width: 100px;
     margin: 0 auto;

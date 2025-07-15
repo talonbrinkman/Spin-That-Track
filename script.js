@@ -541,6 +541,15 @@ document.getElementById("lobbyButton").addEventListener('click', function(){
     document.getElementById("lobbyButton").style.display = "none";
 });
 
+const createdByColors = ['#e6d196', '#38cf6f', '#9d3bff'];
+const root = document.documentElement;
+
+document.getElementById("createdBy").addEventListener('click', function(){
+    const currentColor = getComputedStyle(root).getPropertyValue('--client').trim();
+    let nextIndex = (createdByColors.indexOf(currentColor) + 1) % createdByColors.length;
+    root.style.setProperty('--client', createdByColors[nextIndex]);
+});
+
 socket.on('updateGameData', async function(data){
     console.log(data);
     if(data.updateType == "soft"){
@@ -623,8 +632,8 @@ socket.on('updateGameData', async function(data){
                 userDiv.onclick = function(){
                     if(voted == false){
                         const element = document.getElementById('user-' + gameUser.userId);
-                        if(element.style.backgroundColor != 'var(--gold)'){
-                            element.style.backgroundColor = 'var(--gold)';
+                        if(element.style.backgroundColor != 'var(--client)'){
+                            element.style.backgroundColor = 'var(--client)';
                             user.userGuess.push(gameUser.userId);
                         }
                         else{
@@ -677,7 +686,7 @@ socket.on('updateGameData', async function(data){
     
                 if(user.userGuess.includes(gameUser.userId)){
                     if(user.userGuess.includes(gameUser.userId) && data.playersWithTrack.includes(gameUser.userId)){
-                        userDiv.style.backgroundColor = 'var(--gold)';
+                        userDiv.style.backgroundColor = 'var(--client)';
                     }
                     else{
                         userDiv.style.backgroundColor = 'var(--red)';
@@ -762,7 +771,7 @@ socket.on('updateGameData', async function(data){
     
                 if(user.userGuess.includes(gameUser.userId)){
                     if(user.userGuess.includes(gameUser.userId) && data.playersWithTrack.includes(gameUser.userId)){
-                        userDiv.style.backgroundColor = 'var(--gold)';
+                        userDiv.style.backgroundColor = 'var(--client)';
                     }
                     else{
                         userDiv.style.backgroundColor = 'var(--red)';
