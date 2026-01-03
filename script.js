@@ -1,8 +1,8 @@
-const socket = io('http://spinthattrack.asuscomm.com:3000');
+const socket = io('https://spinthattrack.asuscomm.com:3443', { secure: true });
 
 const clientId = "d9e375382c514e60ad12f7f7897ae6ed";
 const clientSecret = "4c37d46dc0554b108978ec0470f62b36";
-const redirectUri = "http://spinthattrack.asuscomm.com/index.html";
+const redirectUri = "https://spinthattrack.asuscomm.com/callback/callback.html";
 let accessToken;
 
 const user = {
