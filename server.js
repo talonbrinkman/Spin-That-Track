@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require("path");
 const fs = require('fs');
 const https = require('https');
 const http = require('http');
@@ -9,8 +10,8 @@ const app = express();
 app.use(cors());
 app.use(express.static('public'));
 
-const SSL_KEY_PATH = "D:/XAMPP/htdocs/spinthattrack/ssl/server.key";
-const SSL_CERT_PATH = "D:/XAMPP/htdocs/spinthattrack/ssl/server.crt";
+const SSL_KEY_PATH  = path.join(__dirname, "ssl", "server.key");
+const SSL_CERT_PATH = path.join(__dirname, "ssl", "server.crt");
 
 let server;
 let PORT;
