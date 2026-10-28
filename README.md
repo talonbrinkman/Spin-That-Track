@@ -83,8 +83,8 @@
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/talonbrinkman/spin-that-track.git
-   cd spin-that-track
+   git clone https://github.com/talonbrinkman/Spin-That-Track.git
+   cd Spin-That-Track
    ```
 
 2. **Install dependencies:**
@@ -123,10 +123,10 @@ spin-that-track/
 
 ## 🔮 Upcoming Improvements
 
-- [ ] **Spotify Web Playback SDK**: In-browser audio streaming directly in the tab without needing an external Spotify client open.
-- [ ] **Custom Game Modes**: "Guilty Pleasures" mode, genre filters, and playlist-only restrictions.
-- [ ] **Audio Preview Fallback**: 30-second MP3 preview snippets for players without active Spotify Premium subscriptions.
-- [ ] **OAuth PKCE Migration**: Transition client authorization fully to Authorization Code with PKCE.
+- **Spotify Web Playback SDK**: In-browser audio streaming directly in the tab without needing an external Spotify client open.
+- **Custom Game Modes**: "Guilty Pleasures" mode, genre filters, and playlist-only restrictions.
+- **Audio Preview Fallback**: 30-second MP3 preview snippets for players without active Spotify Premium subscriptions.
+- **OAuth PKCE Migration**: Transition client authorization fully to Authorization Code with PKCE.
 
 ---
 
@@ -134,3 +134,4 @@ spin-that-track/
 
 This project is an independent creation and is not affiliated with, endorsed by, or sponsored by Spotify AB.
 Distributed under the ISC License.
+
